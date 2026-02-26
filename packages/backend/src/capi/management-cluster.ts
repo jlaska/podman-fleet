@@ -16,64 +16,65 @@ export class ManagementCluster {
    * Check if the management cluster exists and is healthy
    */
   async getStatus(): Promise<ManagementClusterStatus> {
-    try {
-      // Check if kind CLI is available
-      const kindExists = await this.checkCommandExists('kind');
-      if (!kindExists) {
-        return {
-          exists: false,
-          healthy: false,
-          name: MGMT_CLUSTER_NAME,
-          providers: [],
-          message: 'kind CLI not found',
-        };
-      }
-
-      // Check if cluster exists
-      const clusters = await this.execCommand('kind', ['get', 'clusters']);
-      const clusterExists = clusters.split('\n').includes(MGMT_CLUSTER_NAME);
-
-      if (!clusterExists) {
-        return {
-          exists: false,
-          healthy: false,
-          name: MGMT_CLUSTER_NAME,
-          providers: [],
-        };
-      }
-
-      // Check if cluster is healthy by querying nodes
-      try {
-        await this.execKubectl(['get', 'nodes', '--context', `kind-${MGMT_CLUSTER_NAME}`]);
-      } catch (error) {
-        return {
-          exists: true,
-          healthy: false,
-          name: MGMT_CLUSTER_NAME,
-          providers: [],
-          message: 'Cluster not responding',
-        };
-      }
-
-      // Get installed CAPI providers
-      const providers = await this.getInstalledProviders();
-
-      return {
-        exists: true,
-        healthy: true,
-        name: MGMT_CLUSTER_NAME,
-        providers,
-      };
-    } catch (error) {
-      console.error('Error getting management cluster status:', error);
+    // Check if kind CLI is available
+    const kindExists = await this.checkCommandExists('kind');
+    if (!kindExists) {
       return {
         exists: false,
         healthy: false,
         name: MGMT_CLUSTER_NAME,
         providers: [],
-        message: error instanceof Error ? error.message : 'Unknown error',
+        message: 'kind CLI not found',
       };
     }
+
+    // Check if cluster exists (this should never fail unless kind itself is broken)
+    let clusterExists = false;
+    try {
+      const clusters = await this.execCommand('kind', ['get', 'clusters']);
+      clusterExists = clusters.split('\n').includes(MGMT_CLUSTER_NAME);
+    } catch (error) {
+      console.error('Error checking if cluster exists:', error);
+      return {
+        exists: false,
+        healthy: false,
+        name: MGMT_CLUSTER_NAME,
+        providers: [],
+        message: 'Failed to query kind clusters',
+      };
+    }
+
+    if (!clusterExists) {
+      return {
+        exists: false,
+        healthy: false,
+        name: MGMT_CLUSTER_NAME,
+        providers: [],
+      };
+    }
+
+    // Cluster exists - now check if it's healthy by querying nodes
+    try {
+      await this.execKubectl(['get', 'nodes', '--context', `kind-${MGMT_CLUSTER_NAME}`]);
+    } catch (error) {
+      return {
+        exists: true,
+        healthy: false,
+        name: MGMT_CLUSTER_NAME,
+        providers: [],
+        message: 'Cluster exists but not responding',
+      };
+    }
+
+    // Get installed CAPI providers
+    const providers = await this.getInstalledProviders();
+
+    return {
+      exists: true,
+      healthy: true,
+      name: MGMT_CLUSTER_NAME,
+      providers,
+    };
   }
 
   /**
@@ -125,12 +126,14 @@ export class ManagementCluster {
   /**
    * Delete the management cluster
    */
-  async delete(): Promise<void> {
+  async delete(silent: boolean = false): Promise<void> {
     console.log('Deleting management cluster:', MGMT_CLUSTER_NAME);
 
     try {
       await this.execCommand('kind', ['delete', 'cluster', '--name', MGMT_CLUSTER_NAME]);
-      await extensionApi.window.showInformationMessage(`Management cluster "${MGMT_CLUSTER_NAME}" deleted`);
+      if (!silent) {
+        await extensionApi.window.showInformationMessage(`Management cluster "${MGMT_CLUSTER_NAME}" deleted`);
+      }
     } catch (error) {
       throw new Error(`Failed to delete management cluster: ${error}`);
     }

@@ -33,11 +33,28 @@ export class podmanFleetApi implements PodmanFleetApi {
   async initializeManagementCluster(): Promise<void> {
     try {
       const status = await this.managementCluster.getStatus();
-      if (status.exists) {
-        await podmanDesktopApi.window.showInformationMessage('Management cluster already exists');
+
+      if (status.exists && status.healthy) {
+        await podmanDesktopApi.window.showInformationMessage('Management cluster already exists and is healthy');
         return;
       }
 
+      if (status.exists && !status.healthy) {
+        // Cluster exists but is unhealthy - offer to recreate
+        const result = await podmanDesktopApi.window.showWarningMessage(
+          `Management cluster "${status.name}" exists but is not healthy. Would you like to delete and recreate it?`,
+          'Recreate',
+          'Cancel',
+        );
+
+        if (result === 'Recreate') {
+          await this.managementCluster.delete(true); // Silent delete
+          await this.managementCluster.create();
+        }
+        return;
+      }
+
+      // Cluster doesn't exist - create it
       await this.managementCluster.create();
     } catch (error) {
       console.error('Error initializing management cluster:', error);
