@@ -28,10 +28,16 @@ export class ManagementCluster {
       };
     }
 
-    // Check if cluster exists (this should never fail unless kind itself is broken)
+    // Check if cluster exists using podman provider
     let clusterExists = false;
     try {
-      const clusters = await this.execCommand('kind', ['get', 'clusters']);
+      const clusters = await this.execCommand(
+        'kind',
+        ['get', 'clusters'],
+        {
+          KIND_EXPERIMENTAL_PROVIDER: 'podman',
+        },
+      );
       clusterExists = clusters.split('\n').includes(MGMT_CLUSTER_NAME);
     } catch (error) {
       console.error('Error checking if cluster exists:', error);
@@ -130,7 +136,13 @@ export class ManagementCluster {
     console.log('Deleting management cluster:', MGMT_CLUSTER_NAME);
 
     try {
-      await this.execCommand('kind', ['delete', 'cluster', '--name', MGMT_CLUSTER_NAME]);
+      await this.execCommand(
+        'kind',
+        ['delete', 'cluster', '--name', MGMT_CLUSTER_NAME],
+        {
+          KIND_EXPERIMENTAL_PROVIDER: 'podman',
+        },
+      );
       if (!silent) {
         await extensionApi.window.showInformationMessage(`Management cluster "${MGMT_CLUSTER_NAME}" deleted`);
       }
