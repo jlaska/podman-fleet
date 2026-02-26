@@ -18,7 +18,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   const fleetApi = new podmanFleetApi(extensionContext);
 
   // Create webview panel for the fleet dashboard
-  fleetPanel = extensionApi.window.createWebviewPanel('podmanFleet', 'Podman Fleet', {
+  fleetPanel = extensionApi.window.createWebviewPanel('podmanFleet', 'Fleet', {
     localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
   });
   extensionContext.subscriptions.push(fleetPanel);

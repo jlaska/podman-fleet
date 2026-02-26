@@ -41,11 +41,17 @@ async function loadData() {
 }
 
 async function handleInitialize() {
+  loading = true;
+  error = '';
+
   try {
     await podmanFleetClient.initializeManagementCluster();
     await loadData();
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to initialize management cluster';
+    console.error('Error initializing management cluster:', err);
+  } finally {
+    loading = false;
   }
 }
 
@@ -58,7 +64,7 @@ async function handleRefresh() {
   <!-- Header -->
   <div class="flex items-center justify-between px-5 py-4 border-b border-charcoal-600">
     <div class="flex items-center gap-2">
-      <div class="text-xl font-bold">Podman Fleet</div>
+      <div class="text-xl font-bold">Fleet</div>
       <div class="text-sm text-gray-400">Kubernetes Fleet Management</div>
     </div>
     <Button on:click={handleRefresh} icon={faRefresh}>Refresh</Button>
@@ -78,8 +84,8 @@ async function handleRefresh() {
     <!-- Management cluster not initialized -->
     <div class="flex items-center justify-center flex-1">
       <EmptyScreen
-        title="Welcome to Podman Fleet"
-        message="Create a management cluster to start managing your Kubernetes fleet"
+        title="Welcome to Fleet"
+        message="Create a management cluster to start managing your Kubernetes fleet. Requires: kind, kubectl, clusterctl CLIs"
         icon={faServer}>
         <Button on:click={handleInitialize} icon={faPlus}>Initialize Management Cluster</Button>
       </EmptyScreen>

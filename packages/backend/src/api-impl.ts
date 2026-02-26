@@ -31,13 +31,20 @@ export class podmanFleetApi implements PodmanFleetApi {
    * Initialize management cluster
    */
   async initializeManagementCluster(): Promise<void> {
-    const status = await this.managementCluster.getStatus();
-    if (status.exists) {
-      await podmanDesktopApi.window.showInformationMessage('Management cluster already exists');
-      return;
-    }
+    try {
+      const status = await this.managementCluster.getStatus();
+      if (status.exists) {
+        await podmanDesktopApi.window.showInformationMessage('Management cluster already exists');
+        return;
+      }
 
-    await this.managementCluster.create();
+      await this.managementCluster.create();
+    } catch (error) {
+      console.error('Error initializing management cluster:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await podmanDesktopApi.window.showErrorMessage(`Failed to initialize management cluster: ${errorMessage}`);
+      throw error;
+    }
   }
 
   /**
