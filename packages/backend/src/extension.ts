@@ -2,38 +2,38 @@ import type { ExtensionContext } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import fs from 'node:fs';
 import { RpcExtension } from '/@shared/src/messages/MessageProxy';
-import { podmanFleetApi } from './api-impl';
+import { openShiftManagementApi } from './api-impl';
 
 /**
- * Podman Fleet Extension
- * Kubernetes fleet management using Cluster API
+ * OpenShift Management Extension
+ * OpenShift and Kubernetes cluster management using Cluster API
  */
 
-let fleetPanel: extensionApi.WebviewPanel | undefined;
+let managementPanel: extensionApi.WebviewPanel | undefined;
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
-  console.log('Starting Podman Fleet extension');
+  console.log('Starting OpenShift Management extension');
 
   // Create the API instance
-  const fleetApi = new podmanFleetApi(extensionContext);
+  const managementApi = new openShiftManagementApi(extensionContext);
 
-  // Create webview panel for the fleet dashboard
-  fleetPanel = extensionApi.window.createWebviewPanel('podmanFleet', 'Fleet', {
+  // Create webview panel for the management dashboard
+  managementPanel = extensionApi.window.createWebviewPanel('openshiftManagement', 'OpenShift Management', {
     localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
   });
-  extensionContext.subscriptions.push(fleetPanel);
+  extensionContext.subscriptions.push(managementPanel);
 
   // Set up the webview HTML
-  await setupWebview(extensionContext, fleetPanel);
+  await setupWebview(extensionContext, managementPanel);
 
   // Register the RPC API
-  const rpcExtension = new RpcExtension(fleetPanel.webview);
-  rpcExtension.registerInstance<podmanFleetApi>(podmanFleetApi, fleetApi);
+  const rpcExtension = new RpcExtension(managementPanel.webview);
+  rpcExtension.registerInstance<openShiftManagementApi>(openShiftManagementApi, managementApi);
 
   // Register provider (optional - for future Podman Desktop integration)
   const provider = extensionApi.provider.createProvider({
-    name: 'Podman Fleet',
-    id: 'podman-fleet',
+    name: 'OpenShift Management',
+    id: 'openshift-management',
     status: 'ready',
     images: {
       icon: './icon.png',
@@ -41,15 +41,15 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   });
   extensionContext.subscriptions.push(provider);
 
-  console.log('Podman Fleet extension activated');
+  console.log('OpenShift Management extension activated');
 
   // Check management cluster status on startup
-  checkManagementClusterStatus(fleetApi);
+  checkManagementClusterStatus(managementApi);
 }
 
 export async function deactivate(): Promise<void> {
-  console.log('Stopping Podman Fleet extension');
-  fleetPanel?.dispose();
+  console.log('Stopping OpenShift Management extension');
+  managementPanel?.dispose();
 }
 
 /**
@@ -97,7 +97,7 @@ async function setupWebview(
 /**
  * Check management cluster status and notify user if action needed
  */
-async function checkManagementClusterStatus(api: podmanFleetApi): Promise<void> {
+async function checkManagementClusterStatus(api: openShiftManagementApi): Promise<void> {
   try {
     const status = await api.getManagementClusterStatus();
 
@@ -107,7 +107,7 @@ async function checkManagementClusterStatus(api: podmanFleetApi): Promise<void> 
     } else if (!status.healthy) {
       console.warn('Management cluster exists but is not healthy');
       await extensionApi.window.showWarningMessage(
-        'Podman Fleet management cluster is not healthy. You may need to recreate it.',
+        'OpenShift Management cluster is not healthy. You may need to recreate it.',
       );
     } else {
       console.log('Management cluster is healthy with providers:', status.providers);

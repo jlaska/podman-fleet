@@ -1,6 +1,6 @@
 <script lang="ts">
 import { Button } from '@podman-desktop/ui-svelte';
-import { podmanFleetClient } from '../api/client';
+import { openShiftManagementClient } from '../api/client';
 
 interface Props {
   onClose: () => void;
@@ -25,7 +25,7 @@ async function handleCreate() {
   error = '';
 
   try {
-    await podmanFleetClient.createCluster({
+    await openShiftManagementClient.createCluster({
       name: clusterName.trim(),
       kubernetesVersion,
       controlPlaneNodes: 1,

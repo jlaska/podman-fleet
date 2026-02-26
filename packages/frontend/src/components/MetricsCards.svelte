@@ -1,8 +1,8 @@
 <script lang="ts">
-import type { FleetMetrics } from '/@shared/src/types/cluster';
+import type { ClusterMetrics } from '/@shared/src/types/cluster';
 
 interface Props {
-  metrics: FleetMetrics;
+  metrics: ClusterMetrics;
 }
 
 let { metrics }: Props = $props();

@@ -2,7 +2,7 @@
 import { Table, TableColumn, TableRow, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { faServer, faTrash, faSync } from '@fortawesome/free-solid-svg-icons';
 import type { Cluster } from '/@shared/src/types/cluster';
-import { podmanFleetClient } from '../api/client';
+import { openShiftManagementClient } from '../api/client';
 
 interface Props {
   clusters: Cluster[];
@@ -13,7 +13,7 @@ let { clusters, onRefresh }: Props = $props();
 
 async function handleDelete(cluster: Cluster) {
   try {
-    await podmanFleetClient.deleteCluster(cluster.name);
+    await openShiftManagementClient.deleteCluster(cluster.name);
     onRefresh();
   } catch (err) {
     console.error('Error deleting cluster:', err);
@@ -22,7 +22,7 @@ async function handleDelete(cluster: Cluster) {
 
 async function handleRefreshCluster(cluster: Cluster) {
   try {
-    await podmanFleetClient.refreshCluster(cluster.name);
+    await openShiftManagementClient.refreshCluster(cluster.name);
     onRefresh();
   } catch (err) {
     console.error('Error refreshing cluster:', err);

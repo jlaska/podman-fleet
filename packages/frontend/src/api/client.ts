@@ -1,4 +1,4 @@
-import type { PodmanFleetApi } from '/@shared/src/PodmanFleetApi';
+import type { OpenShiftManagementApi } from '/@shared/src/OpenShiftManagementApi';
 import { RpcBrowser } from '/@shared/src/messages/MessageProxy';
 
 /**
@@ -11,7 +11,7 @@ export interface RouterState {
 
 const podmanDesktopApi = acquirePodmanDesktopApi();
 export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
-export const podmanFleetClient: PodmanFleetApi = rpcBrowser.getProxy<PodmanFleetApi>();
+export const openShiftManagementClient: OpenShiftManagementApi = rpcBrowser.getProxy<OpenShiftManagementApi>();
 
 // Router state management
 export const saveRouterState = (state: RouterState) => {

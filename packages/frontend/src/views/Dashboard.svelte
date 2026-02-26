@@ -2,15 +2,15 @@
 import { onMount } from 'svelte';
 import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { faServer, faPlus, faRefresh } from '@fortawesome/free-solid-svg-icons';
-import { podmanFleetClient } from '../api/client';
-import type { ManagementClusterStatus, FleetMetrics, Cluster } from '/@shared/src/types/cluster';
+import { openShiftManagementClient } from '../api/client';
+import type { ManagementClusterStatus, ClusterMetrics, Cluster } from '/@shared/src/types/cluster';
 import ManagementClusterCard from '../components/ManagementClusterCard.svelte';
 import MetricsCards from '../components/MetricsCards.svelte';
 import ClusterList from '../components/ClusterList.svelte';
 import CreateClusterDialog from '../components/CreateClusterDialog.svelte';
 
 let managementStatus: ManagementClusterStatus | undefined = $state();
-let metrics: FleetMetrics | undefined = $state();
+let metrics: ClusterMetrics | undefined = $state();
 let clusters: Cluster[] = $state([]);
 let loading = $state(true);
 let error = $state('');
@@ -26,17 +26,17 @@ async function loadData() {
 
   try {
     const [statusResult, metricsResult, clustersResult] = await Promise.all([
-      podmanFleetClient.getManagementClusterStatus(),
-      podmanFleetClient.getFleetMetrics(),
-      podmanFleetClient.listClusters(),
+      openShiftManagementClient.getManagementClusterStatus(),
+      openShiftManagementClient.getClusterMetrics(),
+      openShiftManagementClient.listClusters(),
     ]);
 
     managementStatus = statusResult;
     metrics = metricsResult;
     clusters = clustersResult;
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load fleet data';
-    console.error('Error loading fleet data:', err);
+    error = err instanceof Error ? err.message : 'Failed to load cluster data';
+    console.error('Error loading cluster data:', err);
   } finally {
     loading = false;
   }
@@ -47,7 +47,7 @@ async function handleInitialize() {
   error = '';
 
   try {
-    await podmanFleetClient.initializeManagementCluster();
+    await openShiftManagementClient.initializeManagementCluster();
     await loadData();
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to initialize management cluster';
@@ -66,15 +66,15 @@ async function handleRefresh() {
   <!-- Header -->
   <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--pd-content-divider)]">
     <div class="flex items-center gap-2">
-      <div class="text-xl font-bold text-[var(--pd-content-header)]">Fleet</div>
-      <div class="text-sm text-[var(--pd-content-sub-header)]">Kubernetes Fleet Management</div>
+      <div class="text-xl font-bold text-[var(--pd-content-header)]">OpenShift Management</div>
+      <div class="text-sm text-[var(--pd-content-sub-header)]">Manage OpenShift & Kubernetes Clusters</div>
     </div>
     <Button on:click={handleRefresh} icon={faRefresh}>Refresh</Button>
   </div>
 
   {#if loading}
     <div class="flex items-center justify-center flex-1">
-      <div class="text-[var(--pd-content-sub-header)]">Loading fleet data...</div>
+      <div class="text-[var(--pd-content-sub-header)]">Loading cluster data...</div>
     </div>
   {:else if error}
     <div class="flex items-center justify-center flex-1">
@@ -86,8 +86,8 @@ async function handleRefresh() {
     <!-- Management cluster not initialized -->
     <div class="flex items-center justify-center flex-1">
       <EmptyScreen
-        title="Welcome to Fleet"
-        message="Create a management cluster to start managing your Kubernetes fleet. Requires: kind, kubectl, clusterctl CLIs"
+        title="Welcome to OpenShift Management"
+        message="Create a management cluster to start managing your clusters. Requires: kind, kubectl, clusterctl CLIs"
         icon={faServer}>
         <Button on:click={handleInitialize} icon={faPlus}>Initialize Management Cluster</Button>
       </EmptyScreen>
@@ -100,7 +100,7 @@ async function handleRefresh() {
         <ManagementClusterCard status={managementStatus} onRefresh={loadData} />
       {/if}
 
-      <!-- Fleet metrics -->
+      <!-- Cluster metrics -->
       {#if metrics}
         <MetricsCards {metrics} />
       {/if}

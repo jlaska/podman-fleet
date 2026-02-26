@@ -1,7 +1,7 @@
 {
-  "name": "podman-fleet",
-  "displayName": "Podman Fleet",
-  "description": "Kubernetes fleet management extension for Podman Desktop using Cluster API",
+  "name": "openshift-management",
+  "displayName": "OpenShift Management",
+  "description": "OpenShift and Kubernetes cluster management extension for Podman Desktop using Cluster API",
   "version": "0.1.0",
   "icon": "icon.png",
   "publisher": "jlaska",
@@ -11,8 +11,8 @@
     "npm": ">=11.0.0"
   },
   "scripts": {
-    "build": "concurrently \"pnpm --filter frontend build\" \"pnpm --filter podman-fleet-backend build\"",
-    "watch": "concurrently \"pnpm --filter frontend watch\" \"pnpm --filter podman-fleet-backend watch\"",
+    "build": "concurrently \"pnpm --filter frontend build\" \"pnpm --filter openshift-management-backend build\"",
+    "watch": "concurrently \"pnpm --filter frontend watch\" \"pnpm --filter openshift-management-backend watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --ext js,ts,tsx",

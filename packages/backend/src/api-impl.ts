@@ -1,26 +1,26 @@
 import * as podmanDesktopApi from '@podman-desktop/api';
-import type { PodmanFleetApi, CreateClusterOptions } from '/@shared/src/PodmanFleetApi';
-import type { Cluster, FleetMetrics, ManagementClusterStatus } from '/@shared/src/types/cluster';
+import type { OpenShiftManagementApi, CreateClusterOptions } from '/@shared/src/OpenShiftManagementApi';
+import type { Cluster, ClusterMetrics, ManagementClusterStatus } from '/@shared/src/types/cluster';
 import { ManagementCluster } from './capi/management-cluster';
 import { ClusterOperations } from './capi/cluster-operations';
 import { ClusterCreator } from './capi/cluster-creator';
-import { FleetStore } from './storage/fleet-store';
+import { ClusterStore } from './storage/cluster-store';
 
 /**
- * PodmanFleetApi implementation
- * Provides all backend operations for fleet management
+ * OpenShiftManagementApi implementation
+ * Provides all backend operations for cluster management
  */
-export class podmanFleetApi implements PodmanFleetApi {
+export class openShiftManagementApi implements OpenShiftManagementApi {
   private managementCluster: ManagementCluster;
   private clusterOps: ClusterOperations;
   private clusterCreator: ClusterCreator;
-  private fleetStore: FleetStore;
+  private clusterStore: ClusterStore;
 
   constructor(private readonly extensionContext: podmanDesktopApi.ExtensionContext) {
     this.managementCluster = new ManagementCluster(extensionContext);
     this.clusterOps = new ClusterOperations();
     this.clusterCreator = new ClusterCreator();
-    this.fleetStore = new FleetStore(extensionContext);
+    this.clusterStore = new ClusterStore(extensionContext);
   }
 
   /**
@@ -97,19 +97,19 @@ export class podmanFleetApi implements PodmanFleetApi {
     }
 
     // Get imported clusters
-    const importedClusters = this.fleetStore.getImportedClusters();
+    const importedClusters = this.clusterStore.getImportedClusters();
     clusters.push(...importedClusters);
 
     return clusters;
   }
 
   /**
-   * Get fleet metrics
+   * Get cluster metrics
    */
-  async getFleetMetrics(): Promise<FleetMetrics> {
+  async getClusterMetrics(): Promise<ClusterMetrics> {
     const clusters = await this.listClusters();
 
-    const metrics: FleetMetrics = {
+    const metrics: ClusterMetrics = {
       totalClusters: clusters.length,
       readyClusters: 0,
       provisioningClusters: 0,
@@ -160,7 +160,7 @@ export class podmanFleetApi implements PodmanFleetApi {
     }
 
     // Try imported clusters
-    return this.fleetStore.getImportedCluster(name);
+    return this.clusterStore.getImportedCluster(name);
   }
 
   /**
@@ -222,8 +222,8 @@ export class podmanFleetApi implements PodmanFleetApi {
       await podmanDesktopApi.window.showInformationMessage(`Cluster "${name}" is being deleted`);
     } else {
       // Remove imported cluster
-      this.fleetStore.removeImportedCluster(name);
-      await podmanDesktopApi.window.showInformationMessage(`Cluster "${name}" removed from fleet`);
+      this.clusterStore.removeImportedCluster(name);
+      await podmanDesktopApi.window.showInformationMessage(`Cluster "${name}" removed from management`);
     }
   }
 

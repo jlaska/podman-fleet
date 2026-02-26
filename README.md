@@ -1,10 +1,10 @@
-# Podman Fleet - Kubernetes Fleet Management Extension
+# OpenShift Management - Cluster Management Extension for Podman Desktop
 
-A Podman Desktop extension that provides declarative, provider-agnostic Kubernetes cluster lifecycle management using **Kubernetes Cluster API (CAPI)**.
+A Podman Desktop extension that provides declarative, provider-agnostic OpenShift and Kubernetes cluster lifecycle management using **Kubernetes Cluster API (CAPI)**.
 
 ## Overview
 
-Podman Fleet enables users to create, import, and manage multiple Kubernetes clusters from their workstation without switching between multiple tools and CLIs. Instead of wrapping individual CLIs (kind, rosa, az), this extension leverages Cluster API to provide:
+OpenShift Management enables users to create, import, and manage multiple OpenShift and Kubernetes clusters from their workstation without switching between multiple tools and CLIs. Instead of wrapping individual CLIs (kind, rosa, az), this extension leverages Cluster API to provide:
 
 - **Declarative cluster definitions** as Kubernetes CRDs
 - **Consistent lifecycle management** across all providers
@@ -29,7 +29,7 @@ Podman Fleet enables users to create, import, and manage multiple Kubernetes clu
 - Monitor imported clusters (read-only)
 - Display alongside CAPI-managed clusters
 
-### Fleet Dashboard
+### Management Dashboard
 - Unified view of all clusters (managed + imported)
 - Metrics: total clusters, provider distribution, health status
 - Version distribution charts
@@ -41,7 +41,7 @@ Podman Fleet enables users to create, import, and manage multiple Kubernetes clu
 ┌─────────────────────────────────────────────────────────────────┐
 │                     Podman Desktop Extension                     │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │  Fleet UI    │  │  CAPI Manager│  │  Import Manager      │  │
+│  │  Dashboard   │  │  CAPI Manager│  │  Import Manager      │  │
 │  │  (Webview)   │  │  (Backend)   │  │  (Kubeconfig-only)   │  │
 │  └──────────────┘  └──────────────┘  └──────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
@@ -71,14 +71,14 @@ Podman Fleet enables users to create, import, and manage multiple Kubernetes clu
 ## Project Structure
 
 ```
-podman-fleet/
+openshift-management/
 ├── packages/
 │   ├── backend/              # Extension core
 │   │   ├── src/
 │   │   │   ├── extension.ts  # Entry point
 │   │   │   ├── api-impl.ts   # RPC implementation
 │   │   │   ├── capi/         # CAPI management
-│   │   │   └── import/       # Kubeconfig import
+│   │   │   └── storage/      # Cluster metadata storage
 │   │   └── media/            # Built frontend
 │   ├── frontend/             # Svelte 5 webview
 │   │   ├── src/
@@ -87,7 +87,7 @@ podman-fleet/
 │   │   │   └── wizards/      # Create/import wizards
 │   └── shared/               # Types and RPC contracts
 │       └── src/
-│           ├── PodmanFleetApi.ts
+│           ├── OpenShiftManagementApi.ts
 │           └── types/
 ├── pnpm-workspace.yaml
 └── package.json

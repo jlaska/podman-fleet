@@ -1,7 +1,7 @@
 {
-  "name": "podman-fleet-backend",
-  "displayName": "Podman Fleet",
-  "description": "Kubernetes fleet management using Cluster API",
+  "name": "openshift-management-backend",
+  "displayName": "OpenShift Management",
+  "description": "OpenShift and Kubernetes cluster management using Cluster API",
   "version": "0.1.0",
   "icon": "icon.png",
   "publisher": "jlaska",

@@ -40,7 +40,7 @@ export interface Cluster {
   labels: Record<string, string>;
 }
 
-export interface FleetMetrics {
+export interface ClusterMetrics {
   totalClusters: number;
   readyClusters: number;
   provisioningClusters: number;

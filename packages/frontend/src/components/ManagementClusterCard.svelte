@@ -2,7 +2,7 @@
 import { Button } from '@podman-desktop/ui-svelte';
 import { faCheckCircle, faTimesCircle, faTrash } from '@fortawesome/free-solid-svg-icons';
 import type { ManagementClusterStatus } from '/@shared/src/types/cluster';
-import { podmanFleetClient } from '../api/client';
+import { openShiftManagementClient } from '../api/client';
 
 interface Props {
   status: ManagementClusterStatus;
@@ -13,7 +13,7 @@ let { status, onRefresh }: Props = $props();
 
 async function handleDelete() {
   try {
-    await podmanFleetClient.deleteManagementCluster();
+    await openShiftManagementClient.deleteManagementCluster();
     onRefresh();
   } catch (err) {
     console.error('Error deleting management cluster:', err);

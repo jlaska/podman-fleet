@@ -28,10 +28,10 @@ onMount(() => {
 
   This can be expanded more by including more Route paths which the application can navigate too, for example /about, /contact etc.
 -->
-<Route path="/*" breadcrumb="Podman Fleet" isAppMounted={isMounted} let:meta>
+<Route path="/*" breadcrumb="OpenShift Management" isAppMounted={isMounted} let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)]">
     <div class="flex flex-row w-full h-full overflow-hidden">
-      <Route path="/" breadcrumb="Fleet Dashboard">
+      <Route path="/" breadcrumb="Dashboard">
         <Dashboard />
       </Route>
     </div>

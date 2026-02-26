@@ -1,9 +1,9 @@
 /**
- * PodmanFleetApi is the interface that defines the RPC contract between frontend and backend.
+ * OpenShiftManagementApi is the interface that defines the RPC contract between frontend and backend.
  * Any changes here should also be made to backend/src/api-impl.ts
  */
 
-import type { Cluster, FleetMetrics, ManagementClusterStatus } from './types/cluster';
+import type { Cluster, ClusterMetrics, ManagementClusterStatus } from './types/cluster';
 
 export interface CreateClusterOptions {
   name: string;
@@ -12,15 +12,15 @@ export interface CreateClusterOptions {
   workerNodes?: number;
 }
 
-export abstract class PodmanFleetApi {
+export abstract class OpenShiftManagementApi {
   // Management Cluster operations
   abstract getManagementClusterStatus(): Promise<ManagementClusterStatus>;
   abstract initializeManagementCluster(): Promise<void>;
   abstract deleteManagementCluster(): Promise<void>;
 
-  // Fleet operations
+  // Cluster operations
   abstract listClusters(): Promise<Cluster[]>;
-  abstract getFleetMetrics(): Promise<FleetMetrics>;
+  abstract getClusterMetrics(): Promise<ClusterMetrics>;
 
   // Cluster operations
   abstract getCluster(name: string): Promise<Cluster | undefined>;
