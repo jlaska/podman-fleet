@@ -10,7 +10,7 @@ interface Props {
 let { onClose, onSuccess }: Props = $props();
 
 let clusterName = $state('my-cluster');
-let kubernetesVersion = $state('v1.28.0');
+let openshiftVersion = $state('latest');
 let workerNodes = $state(1);
 let creating = $state(false);
 let error = $state('');
@@ -27,7 +27,7 @@ async function handleCreate() {
   try {
     await openShiftManagementClient.createCluster({
       name: clusterName.trim(),
-      kubernetesVersion,
+      kubernetesVersion: openshiftVersion,
       controlPlaneNodes: 1,
       workerNodes,
     });
@@ -61,19 +61,20 @@ async function handleCreate() {
         />
       </div>
 
-      <!-- Kubernetes Version -->
+      <!-- Red Hat OpenShift Version -->
       <div>
-        <label for="k8s-version" class="block text-sm font-medium mb-1 text-[var(--pd-content-header)]">Kubernetes Version</label>
+        <label for="openshift-version" class="block text-sm font-medium mb-1 text-[var(--pd-content-header)]">Red Hat OpenShift</label>
         <select
-          id="k8s-version"
-          bind:value={kubernetesVersion}
+          id="openshift-version"
+          bind:value={openshiftVersion}
           class="w-full px-3 py-2 bg-[var(--pd-input-field-bg)] border border-[var(--pd-input-field-stroke)] rounded text-[var(--pd-input-field-focused-text)]"
           disabled={creating}
         >
-          <option value="v1.30.0">v1.30.0</option>
-          <option value="v1.29.0">v1.29.0</option>
-          <option value="v1.28.0">v1.28.0 (default)</option>
-          <option value="v1.27.0">v1.27.0</option>
+          <option value="latest">Latest</option>
+          <option value="4.17">4.17</option>
+          <option value="4.16">4.16</option>
+          <option value="4.15">4.15</option>
+          <option value="4.14">4.14</option>
         </select>
       </div>
 
