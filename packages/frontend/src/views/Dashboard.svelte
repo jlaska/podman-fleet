@@ -109,8 +109,8 @@ async function handleRefresh() {
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-[var(--pd-content-header)]">Clusters</h2>
         <div class="flex gap-2">
-          <Button on:click={() => showCreateDialog = true} icon={faServer}>Create Cluster</Button>
-          <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faPlus} type="secondary">Import Cluster</Button>
+          <Button on:click={() => showCreateDialog = true} icon={faPlus}>Create Cluster</Button>
+          <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faServer} type="secondary">Import Cluster</Button>
         </div>
       </div>
 
