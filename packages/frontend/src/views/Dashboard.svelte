@@ -28,15 +28,32 @@ async function loadData() {
   error = '';
 
   try {
-    const [statusResult, metricsResult, clustersResult] = await Promise.all([
+    console.log('Loading dashboard data...');
+
+    // Load with timeout to prevent hanging
+    const loadPromise = Promise.all([
       openShiftManagementClient.getManagementClusterStatus(),
       openShiftManagementClient.getClusterMetrics(),
       openShiftManagementClient.listClusters(),
     ]);
 
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Loading timed out after 30 seconds')), 30000)
+    );
+
+    const [statusResult, metricsResult, clustersResult] = await Promise.race([
+      loadPromise,
+      timeoutPromise,
+    ]) as [any, any, any];
+
     managementStatus = statusResult;
     metrics = metricsResult;
     clusters = clustersResult;
+
+    console.log('Dashboard data loaded:', {
+      management: managementStatus?.exists,
+      totalClusters: metrics?.totalClusters,
+    });
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load cluster data';
     console.error('Error loading cluster data:', err);

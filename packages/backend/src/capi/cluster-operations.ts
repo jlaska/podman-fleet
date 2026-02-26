@@ -14,13 +14,19 @@ export class ClusterOperations {
     try {
       const context = `kind-${MGMT_CLUSTER_NAME}`;
 
-      // Get all clusters from CAPI
-      const output = await this.execKubectl([
-        'get', 'clusters.cluster.x-k8s.io',
-        '-A',
-        '-o', 'json',
-        '--context', context,
-      ]);
+      console.log('Listing CAPI clusters from management cluster...');
+
+      // Get all clusters from CAPI with timeout
+      const output = await this.execKubectlWithTimeout(
+        [
+          'get', 'clusters.cluster.x-k8s.io',
+          '-A',
+          '-o', 'json',
+          '--context', context,
+          '--request-timeout=5s',
+        ],
+        10000, // 10 second timeout
+      );
 
       const result = JSON.parse(output);
       const clusters: Cluster[] = [];
@@ -32,9 +38,10 @@ export class ClusterOperations {
         }
       }
 
+      console.log(`Found ${clusters.length} CAPI-managed clusters`);
       return clusters;
     } catch (error) {
-      console.error('Error listing CAPI clusters:', error);
+      console.error('Error listing CAPI clusters (returning empty list):', error);
       return [];
     }
   }
@@ -46,12 +53,16 @@ export class ClusterOperations {
     try {
       const context = `kind-${MGMT_CLUSTER_NAME}`;
 
-      const output = await this.execKubectl([
-        'get', 'cluster.cluster.x-k8s.io', name,
-        '-n', namespace,
-        '-o', 'json',
-        '--context', context,
-      ]);
+      const output = await this.execKubectlWithTimeout(
+        [
+          'get', 'cluster.cluster.x-k8s.io', name,
+          '-n', namespace,
+          '-o', 'json',
+          '--context', context,
+          '--request-timeout=5s',
+        ],
+        10000,
+      );
 
       const item = JSON.parse(output);
       return this.parseClusterFromCAPI(item);
@@ -67,11 +78,14 @@ export class ClusterOperations {
   async deleteCluster(name: string, namespace: string = 'default'): Promise<void> {
     const context = `kind-${MGMT_CLUSTER_NAME}`;
 
-    await this.execKubectl([
-      'delete', 'cluster.cluster.x-k8s.io', name,
-      '-n', namespace,
-      '--context', context,
-    ]);
+    await this.execKubectlWithTimeout(
+      [
+        'delete', 'cluster.cluster.x-k8s.io', name,
+        '-n', namespace,
+        '--context', context,
+      ],
+      30000, // 30 second timeout for delete
+    );
 
     console.log(`Cluster ${name} deleted`);
   }
@@ -151,10 +165,63 @@ export class ClusterOperations {
   }
 
   /**
-   * Execute kubectl command
+   * Execute kubectl command with timeout
    */
-  private async execKubectl(args: string[]): Promise<string> {
-    return this.execCommand('kubectl', args);
+  private async execKubectlWithTimeout(args: string[], timeoutMs: number = 10000): Promise<string> {
+    return new Promise((resolve, reject) => {
+      // Ensure PATH includes common locations for Homebrew and system binaries
+      const enhancedPath = [
+        '/opt/homebrew/bin',
+        '/usr/local/bin',
+        '/usr/bin',
+        '/bin',
+        process.env.PATH || '',
+      ].join(':');
+
+      const proc = spawn('kubectl', args, {
+        env: {
+          ...process.env,
+          PATH: enhancedPath,
+        },
+      });
+
+      let stdout = '';
+      let stderr = '';
+      let timedOut = false;
+
+      // Set timeout
+      const timeout = setTimeout(() => {
+        timedOut = true;
+        proc.kill();
+        reject(new Error(`kubectl command timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      proc.stdout.on('data', data => {
+        stdout += data.toString();
+      });
+
+      proc.stderr.on('data', data => {
+        stderr += data.toString();
+      });
+
+      proc.on('close', code => {
+        clearTimeout(timeout);
+        if (timedOut) return;
+
+        if (code === 0) {
+          resolve(stdout);
+        } else {
+          reject(new Error(`kubectl failed with code ${code}: ${stderr || stdout}`));
+        }
+      });
+
+      proc.on('error', error => {
+        clearTimeout(timeout);
+        if (!timedOut) {
+          reject(error);
+        }
+      });
+    });
   }
 
   /**
