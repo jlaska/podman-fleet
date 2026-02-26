@@ -235,7 +235,10 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
    */
   async importFromKubeconfig(kubeconfigPath: string): Promise<void> {
     try {
-      const clusters = await this.kubeconfigImport.importFromFile(kubeconfigPath);
+      console.log('Starting import from kubeconfig:', kubeconfigPath);
+
+      // Skip health checks for faster import (we can refresh later)
+      const clusters = await this.kubeconfigImport.importFromFile(kubeconfigPath, true);
 
       if (clusters.length === 0) {
         await podmanDesktopApi.window.showWarningMessage('No clusters found in kubeconfig file');

@@ -36,7 +36,9 @@ export class KubeconfigImport {
   /**
    * Import clusters from a kubeconfig file
    */
-  async importFromFile(kubeconfigPath: string): Promise<Cluster[]> {
+  async importFromFile(kubeconfigPath: string, skipHealthCheck: boolean = false): Promise<Cluster[]> {
+    console.log('Importing from kubeconfig:', kubeconfigPath);
+
     // Read and parse kubeconfig
     const content = await fs.promises.readFile(kubeconfigPath, 'utf-8');
     const kubeconfig = yaml.load(content) as KubeConfig;
@@ -45,10 +47,14 @@ export class KubeconfigImport {
       throw new Error('Invalid kubeconfig file: missing clusters or contexts');
     }
 
+    console.log(`Found ${kubeconfig.contexts.length} contexts in kubeconfig`);
+
     const importedClusters: Cluster[] = [];
 
     // Process each context (each context represents a cluster connection)
     for (const context of kubeconfig.contexts) {
+      console.log(`Processing context: ${context.name}`);
+
       const clusterDef = kubeconfig.clusters.find(c => c.name === context.context.cluster);
 
       if (!clusterDef) {
@@ -57,8 +63,12 @@ export class KubeconfigImport {
       }
 
       try {
-        // Try to get cluster info to verify it's accessible
-        const clusterInfo = await this.getClusterInfo(context.name, kubeconfigPath);
+        // Try to get cluster info to verify it's accessible (skip if requested for speed)
+        let clusterInfo = { reachable: false, version: undefined, nodeCount: undefined };
+
+        if (!skipHealthCheck) {
+          clusterInfo = await this.getClusterInfo(context.name, kubeconfigPath);
+        }
 
         const cluster: Cluster = {
           id: `imported/${context.name}`,
@@ -75,6 +85,7 @@ export class KubeconfigImport {
           labels: {},
         };
 
+        console.log(`Imported cluster: ${context.name} (${cluster.status})`);
         importedClusters.push(cluster);
       } catch (error) {
         console.error(`Failed to import context ${context.name}:`, error);
@@ -99,6 +110,7 @@ export class KubeconfigImport {
       }
     }
 
+    console.log(`Successfully imported ${importedClusters.length} clusters`);
     return importedClusters;
   }
 
@@ -136,10 +148,11 @@ export class KubeconfigImport {
     kubeconfigPath: string,
   ): Promise<{ reachable: boolean; version?: string; nodeCount?: number }> {
     try {
-      // Get server version
-      const versionOutput = await this.execKubectl(
-        ['version', '--short', '--context', contextName],
+      // Get server version with timeout
+      const versionOutput = await this.execKubectlWithTimeout(
+        ['version', '--short', '--context', contextName, '--request-timeout=5s'],
         { KUBECONFIG: kubeconfigPath },
+        10000, // 10 second timeout
       );
 
       // Extract server version
@@ -149,13 +162,15 @@ export class KubeconfigImport {
       // Get node count
       let nodeCount = 0;
       try {
-        const nodesOutput = await this.execKubectl(
-          ['get', 'nodes', '--no-headers', '--context', contextName],
+        const nodesOutput = await this.execKubectlWithTimeout(
+          ['get', 'nodes', '--no-headers', '--context', contextName, '--request-timeout=5s'],
           { KUBECONFIG: kubeconfigPath },
+          10000,
         );
         nodeCount = nodesOutput.trim().split('\n').filter(Boolean).length;
       } catch (error) {
         // Node listing might fail, that's okay
+        console.log(`Could not get node count for ${contextName}:`, error);
       }
 
       return {
@@ -164,6 +179,7 @@ export class KubeconfigImport {
         nodeCount,
       };
     } catch (error) {
+      console.log(`Cluster ${contextName} not reachable:`, error);
       return {
         reachable: false,
       };
@@ -227,9 +243,13 @@ export class KubeconfigImport {
   }
 
   /**
-   * Execute kubectl command
+   * Execute kubectl command with timeout
    */
-  private async execKubectl(args: string[], env: Record<string, string> = {}): Promise<string> {
+  private async execKubectlWithTimeout(
+    args: string[],
+    env: Record<string, string> = {},
+    timeoutMs: number = 10000,
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       // Ensure PATH includes common locations for Homebrew and system binaries
       const enhancedPath = [
@@ -250,6 +270,14 @@ export class KubeconfigImport {
 
       let stdout = '';
       let stderr = '';
+      let timedOut = false;
+
+      // Set timeout
+      const timeout = setTimeout(() => {
+        timedOut = true;
+        proc.kill();
+        reject(new Error(`kubectl command timed out after ${timeoutMs}ms`));
+      }, timeoutMs);
 
       proc.stdout.on('data', data => {
         stdout += data.toString();
@@ -260,6 +288,9 @@ export class KubeconfigImport {
       });
 
       proc.on('close', code => {
+        clearTimeout(timeout);
+        if (timedOut) return;
+
         if (code === 0) {
           resolve(stdout);
         } else {
@@ -268,8 +299,12 @@ export class KubeconfigImport {
       });
 
       proc.on('error', error => {
-        reject(error);
+        clearTimeout(timeout);
+        if (!timedOut) {
+          reject(error);
+        }
       });
     });
   }
+}
 }
