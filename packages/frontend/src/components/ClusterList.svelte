@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Button, EmptyScreen } from '@podman-desktop/ui-svelte';
+import { Table, TableColumn, TableRow, EmptyScreen } from '@podman-desktop/ui-svelte';
 import { faServer, faTrash, faSync } from '@fortawesome/free-solid-svg-icons';
 import type { Cluster } from '/@shared/src/types/cluster';
 import { podmanFleetClient } from '../api/client';
@@ -32,41 +32,37 @@ async function handleRefreshCluster(cluster: Cluster) {
 function getStatusColor(status: string): string {
   switch (status) {
     case 'ready':
-      return 'text-green-400';
+      return 'text-green-600';
     case 'provisioning':
-      return 'text-yellow-400';
+      return 'text-amber-600';
     case 'failed':
-      return 'text-red-400';
+      return 'text-red-600';
     case 'deleting':
-      return 'text-orange-400';
+      return 'text-orange-600';
     default:
-      return 'text-gray-400';
+      return 'text-[var(--pd-content-sub-header)]';
   }
 }
 
 function getProviderColor(provider: string): string {
   switch (provider) {
     case 'docker':
-      return 'bg-blue-600';
+      return 'bg-blue-600 text-white';
     case 'aws':
-      return 'bg-orange-600';
+      return 'bg-orange-600 text-white';
     case 'azure':
-      return 'bg-cyan-600';
+      return 'bg-cyan-600 text-white';
     case 'vsphere':
-      return 'bg-purple-600';
+      return 'bg-purple-600 text-white';
     case 'imported':
-      return 'bg-gray-600';
+      return 'bg-gray-600 text-white';
     default:
-      return 'bg-gray-600';
+      return 'bg-gray-600 text-white';
   }
 }
 </script>
 
 <div class="flex flex-col flex-1">
-  <div class="flex items-center justify-between mb-3">
-    <h2 class="text-lg font-semibold">Clusters</h2>
-  </div>
-
   {#if clusters.length === 0}
     <EmptyScreen
       title="No Clusters"
@@ -74,60 +70,58 @@ function getProviderColor(provider: string): string {
       icon={faServer}
     />
   {:else}
-    <div class="bg-charcoal-800 rounded-lg border border-charcoal-600 overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-charcoal-700">
-          <tr>
-            <th class="px-4 py-3 text-left text-sm font-semibold">Name</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold">Provider</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold">Status</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold">Version</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold">Type</th>
-            <th class="px-4 py-3 text-left text-sm font-semibold">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each clusters as cluster}
-            <tr class="border-t border-charcoal-600 hover:bg-charcoal-700">
-              <td class="px-4 py-3 font-mono text-sm">{cluster.name}</td>
-              <td class="px-4 py-3">
-                <span class="px-2 py-1 {getProviderColor(cluster.provider)} rounded text-xs">
-                  {cluster.provider}
-                </span>
-              </td>
-              <td class="px-4 py-3">
-                <span class="{getStatusColor(cluster.status)} capitalize text-sm">
-                  {cluster.status}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-sm">{cluster.version}</td>
-              <td class="px-4 py-3">
-                {#if cluster.managed}
-                  <span class="px-2 py-1 bg-green-600 rounded text-xs">CAPI</span>
-                {:else}
-                  <span class="px-2 py-1 bg-gray-600 rounded text-xs">Imported</span>
-                {/if}
-              </td>
-              <td class="px-4 py-3">
-                <div class="flex gap-2">
-                  <button
-                    class="text-blue-400 hover:text-blue-300"
-                    onclick={() => handleRefreshCluster(cluster)}
-                    title="Refresh">
-                    <i class="fas fa-sync"></i>
-                  </button>
-                  <button
-                    class="text-red-400 hover:text-red-300"
-                    onclick={() => handleDelete(cluster)}
-                    title="Delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
-    </div>
+    <Table>
+      <TableRow>
+        <TableColumn>Name</TableColumn>
+        <TableColumn>Provider</TableColumn>
+        <TableColumn>Status</TableColumn>
+        <TableColumn>Version</TableColumn>
+        <TableColumn>Type</TableColumn>
+        <TableColumn>Actions</TableColumn>
+      </TableRow>
+      {#each clusters as cluster}
+        <TableRow>
+          <TableColumn>
+            <span class="font-mono text-sm">{cluster.name}</span>
+          </TableColumn>
+          <TableColumn>
+            <span class="px-2 py-1 {getProviderColor(cluster.provider)} rounded text-xs">
+              {cluster.provider}
+            </span>
+          </TableColumn>
+          <TableColumn>
+            <span class="{getStatusColor(cluster.status)} capitalize text-sm">
+              {cluster.status}
+            </span>
+          </TableColumn>
+          <TableColumn>
+            <span class="text-sm">{cluster.version}</span>
+          </TableColumn>
+          <TableColumn>
+            {#if cluster.managed}
+              <span class="px-2 py-1 bg-green-600 text-white rounded text-xs">CAPI</span>
+            {:else}
+              <span class="px-2 py-1 bg-gray-600 text-white rounded text-xs">Imported</span>
+            {/if}
+          </TableColumn>
+          <TableColumn>
+            <div class="flex gap-2">
+              <button
+                class="text-[var(--pd-button-primary-bg)] hover:opacity-80"
+                onclick={() => handleRefreshCluster(cluster)}
+                title="Refresh">
+                <i class="fas fa-sync"></i>
+              </button>
+              <button
+                class="text-red-600 hover:opacity-80"
+                onclick={() => handleDelete(cluster)}
+                title="Delete">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </TableColumn>
+        </TableRow>
+      {/each}
+    </Table>
   {/if}
 </div>

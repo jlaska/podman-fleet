@@ -44,30 +44,30 @@ async function handleCreate() {
 </script>
 
 <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-charcoal-800 rounded-lg border border-charcoal-600 p-6 w-full max-w-md">
-    <h2 class="text-xl font-bold mb-4">Create Local Cluster</h2>
+  <div class="bg-[var(--pd-content-bg)] rounded-lg border border-[var(--pd-content-card-border)] shadow-2xl p-6 w-full max-w-md">
+    <h2 class="text-xl font-bold mb-4 text-[var(--pd-content-header)]">Create Local Cluster</h2>
 
     <div class="space-y-4">
       <!-- Cluster Name -->
       <div>
-        <label for="cluster-name" class="block text-sm font-medium mb-1">Cluster Name</label>
+        <label for="cluster-name" class="block text-sm font-medium mb-1 text-[var(--pd-content-header)]">Cluster Name</label>
         <input
           id="cluster-name"
           type="text"
           bind:value={clusterName}
           placeholder="my-cluster"
-          class="w-full px-3 py-2 bg-charcoal-900 border border-charcoal-600 rounded text-white"
+          class="w-full px-3 py-2 bg-[var(--pd-input-field-bg)] border border-[var(--pd-input-field-stroke)] rounded text-[var(--pd-input-field-focused-text)]"
           disabled={creating}
         />
       </div>
 
       <!-- Kubernetes Version -->
       <div>
-        <label for="k8s-version" class="block text-sm font-medium mb-1">Kubernetes Version</label>
+        <label for="k8s-version" class="block text-sm font-medium mb-1 text-[var(--pd-content-header)]">Kubernetes Version</label>
         <select
           id="k8s-version"
           bind:value={kubernetesVersion}
-          class="w-full px-3 py-2 bg-charcoal-900 border border-charcoal-600 rounded text-white"
+          class="w-full px-3 py-2 bg-[var(--pd-input-field-bg)] border border-[var(--pd-input-field-stroke)] rounded text-[var(--pd-input-field-focused-text)]"
           disabled={creating}
         >
           <option value="v1.30.0">v1.30.0</option>
@@ -79,7 +79,7 @@ async function handleCreate() {
 
       <!-- Worker Nodes -->
       <div>
-        <label for="worker-nodes" class="block text-sm font-medium mb-1">
+        <label for="worker-nodes" class="block text-sm font-medium mb-1 text-[var(--pd-content-header)]">
           Worker Nodes: {workerNodes}
         </label>
         <input
@@ -92,20 +92,20 @@ async function handleCreate() {
           class="w-full"
           disabled={creating}
         />
-        <div class="flex justify-between text-xs text-gray-400">
+        <div class="flex justify-between text-xs text-[var(--pd-content-sub-header)]">
           <span>0</span>
           <span>5</span>
         </div>
       </div>
 
       <!-- Info Box -->
-      <div class="bg-blue-900 bg-opacity-30 border border-blue-700 rounded p-3 text-sm">
+      <div class="bg-[var(--pd-invert-content-card-bg)] border border-[var(--pd-content-card-border)] rounded p-3 text-sm text-[var(--pd-content-text)]">
         <strong>Note:</strong> This creates a local Docker-based cluster using CAPI.
         Cluster creation takes 2-5 minutes.
       </div>
 
       {#if error}
-        <div class="bg-red-900 bg-opacity-30 border border-red-700 rounded p-3 text-sm text-red-400">
+        <div class="bg-red-100 dark:bg-red-900 dark:bg-opacity-30 border border-red-600 rounded p-3 text-sm text-red-600">
           {error}
         </div>
       {/if}

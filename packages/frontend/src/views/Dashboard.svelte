@@ -64,17 +64,17 @@ async function handleRefresh() {
 
 <div class="flex flex-col w-full h-full">
   <!-- Header -->
-  <div class="flex items-center justify-between px-5 py-4 border-b border-charcoal-600">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-[var(--pd-content-divider)]">
     <div class="flex items-center gap-2">
-      <div class="text-xl font-bold">Fleet</div>
-      <div class="text-sm text-gray-400">Kubernetes Fleet Management</div>
+      <div class="text-xl font-bold text-[var(--pd-content-header)]">Fleet</div>
+      <div class="text-sm text-[var(--pd-content-sub-header)]">Kubernetes Fleet Management</div>
     </div>
     <Button on:click={handleRefresh} icon={faRefresh}>Refresh</Button>
   </div>
 
   {#if loading}
     <div class="flex items-center justify-center flex-1">
-      <div class="text-gray-400">Loading fleet data...</div>
+      <div class="text-[var(--pd-content-sub-header)]">Loading fleet data...</div>
     </div>
   {:else if error}
     <div class="flex items-center justify-center flex-1">
@@ -107,10 +107,10 @@ async function handleRefresh() {
 
       <!-- Actions bar -->
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-lg font-semibold">Clusters</h2>
+        <h2 class="text-lg font-semibold text-[var(--pd-content-header)]">Clusters</h2>
         <div class="flex gap-2">
-          <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faPlus}>Import Cluster</Button>
           <Button on:click={() => showCreateDialog = true} icon={faServer}>Create Cluster</Button>
+          <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faPlus} type="secondary">Import Cluster</Button>
         </div>
       </div>
 
