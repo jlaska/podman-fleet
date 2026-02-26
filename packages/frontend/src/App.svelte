@@ -6,7 +6,7 @@ import { router } from 'tinro';
 import Route from './lib/Route.svelte';
 import { onMount } from 'svelte';
 import { getRouterState } from './api/client';
-import HelloWorld from './HelloWorld.svelte';
+import Dashboard from './views/Dashboard.svelte';
 
 // Using our router instance, we can determine if the application has been mounted.
 router.mode.hash();
@@ -28,11 +28,11 @@ onMount(() => {
 
   This can be expanded more by including more Route paths which the application can navigate too, for example /about, /contact etc.
 -->
-<Route path="/*" breadcrumb="Hello World" isAppMounted={isMounted} let:meta>
+<Route path="/*" breadcrumb="Podman Fleet" isAppMounted={isMounted} let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)]">
     <div class="flex flex-row w-full h-full overflow-hidden">
-      <Route path="/" breadcrumb="Hello World Page">
-        <HelloWorld />
+      <Route path="/" breadcrumb="Fleet Dashboard">
+        <Dashboard />
       </Route>
     </div>
   </main>

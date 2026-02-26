@@ -2,35 +2,68 @@ import type { ExtensionContext } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import fs from 'node:fs';
 import { RpcExtension } from '/@shared/src/messages/MessageProxy';
-import { helloWorldApi } from './api-impl';
+import { podmanFleetApi } from './api-impl';
 
 /**
- * Below is the "typical" extension.ts file that is used to activate and deactrivate the extension.
- * this file as well as package.json are the two main files that are required to develop a Podman Desktop extension.
+ * Podman Fleet Extension
+ * Kubernetes fleet management using Cluster API
  */
 
-// Initialize the activation of the extension.
-export async function activate(extensionContext: ExtensionContext): Promise<void> {
-  console.log('starting hello world extension');
+let fleetPanel: extensionApi.WebviewPanel | undefined;
 
-  // A web view panel is created to display the index
-  // we use the 'media' folder that contains the bread-and-butter of the webview.
-  // it is assumed that index.html is the main file that is being displayed and all other files have already been generated.
-  //
-  // The 'index.html' and all other files are built with the `yarn build` command within packages/frontend which can also be ran with the
-  // `yarn build` command in the main directory, which will also build the backend and shared packages.
-  const panel = extensionApi.window.createWebviewPanel('helloWorld', 'Hello World', {
+export async function activate(extensionContext: ExtensionContext): Promise<void> {
+  console.log('Starting Podman Fleet extension');
+
+  // Create the API instance
+  const fleetApi = new podmanFleetApi(extensionContext);
+
+  // Create webview panel for the fleet dashboard
+  fleetPanel = extensionApi.window.createWebviewPanel('podmanFleet', 'Podman Fleet', {
     localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
   });
-  extensionContext.subscriptions.push(panel);
+  extensionContext.subscriptions.push(fleetPanel);
 
-  // Set the index.html file for the webview.
+  // Set up the webview HTML
+  await setupWebview(extensionContext, fleetPanel);
+
+  // Register the RPC API
+  const rpcExtension = new RpcExtension(fleetPanel.webview);
+  rpcExtension.registerInstance<podmanFleetApi>(podmanFleetApi, fleetApi);
+
+  // Register provider (optional - for future Podman Desktop integration)
+  const provider = extensionApi.provider.createProvider({
+    name: 'Podman Fleet',
+    id: 'podman-fleet',
+    status: 'ready',
+    images: {
+      icon: './icon.png',
+    },
+  });
+  extensionContext.subscriptions.push(provider);
+
+  console.log('Podman Fleet extension activated');
+
+  // Check management cluster status on startup
+  checkManagementClusterStatus(fleetApi);
+}
+
+export async function deactivate(): Promise<void> {
+  console.log('Stopping Podman Fleet extension');
+  fleetPanel?.dispose();
+}
+
+/**
+ * Set up the webview HTML content
+ */
+async function setupWebview(
+  extensionContext: ExtensionContext,
+  panel: extensionApi.WebviewPanel,
+): Promise<void> {
   const indexHtmlUri = extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media', 'index.html');
   const indexHtmlPath = indexHtmlUri.fsPath;
   let indexHtml = await fs.promises.readFile(indexHtmlPath, 'utf8');
 
-  // TEMPORARY. This is a workaround to replace the src of the script tag in the index.html file so that links work correctly.
-  // In the content <script type="module" crossorigin src="./index-RKnfBG18.js"></script> replaces src with webview.asWebviewUri
+  // Fix script src paths
   const scriptLink = indexHtml.match(/<script.*?src="(.*?)".*?>/g);
   if (scriptLink) {
     scriptLink.forEach(link => {
@@ -44,7 +77,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     });
   }
 
-  // TEMPORARY. We do the same for the css link
+  // Fix CSS link paths
   const cssLink = indexHtml.match(/<link.*?href="(.*?)".*?>/g);
   if (cssLink) {
     cssLink.forEach(link => {
@@ -58,15 +91,28 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     });
   }
 
-  // Update the webview panel with the new index.html file with corrected links.
   panel.webview.html = indexHtml;
-
-  // We now register the 'api' for the webview to communicate to the backend
-  const rpcExtension = new RpcExtension(panel.webview);
-  const HelloWorldApi = new helloWorldApi(extensionContext);
-  rpcExtension.registerInstance<helloWorldApi>(helloWorldApi, HelloWorldApi);
 }
 
-export async function deactivate(): Promise<void> {
-  console.log('stopping hello world extension');
+/**
+ * Check management cluster status and notify user if action needed
+ */
+async function checkManagementClusterStatus(api: podmanFleetApi): Promise<void> {
+  try {
+    const status = await api.getManagementClusterStatus();
+
+    if (!status.exists) {
+      console.log('Management cluster does not exist');
+      // Don't auto-create - let user decide via UI
+    } else if (!status.healthy) {
+      console.warn('Management cluster exists but is not healthy');
+      await extensionApi.window.showWarningMessage(
+        'Podman Fleet management cluster is not healthy. You may need to recreate it.',
+      );
+    } else {
+      console.log('Management cluster is healthy with providers:', status.providers);
+    }
+  } catch (error) {
+    console.error('Error checking management cluster status:', error);
+  }
 }

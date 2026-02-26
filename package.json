@@ -11,8 +11,8 @@
     "npm": ">=11.0.0"
   },
   "scripts": {
-    "build": "concurrently \"pnpm --filter frontend build\" \"pnpm --filter helloworld build\"",
-    "watch": "concurrently \"pnpm --filter frontend watch\" \"pnpm --filter helloworld watch\"",
+    "build": "concurrently \"pnpm --filter frontend build\" \"pnpm --filter podman-fleet-backend build\"",
+    "watch": "concurrently \"pnpm --filter frontend watch\" \"pnpm --filter podman-fleet-backend watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --ext js,ts,tsx",

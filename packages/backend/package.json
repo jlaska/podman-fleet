@@ -1,10 +1,10 @@
 {
-  "name": "helloworld",
-  "displayName": "Hello World",
-  "description": "Hello World extension",
-  "version": "0.0.1",
+  "name": "podman-fleet-backend",
+  "displayName": "Podman Fleet",
+  "description": "Kubernetes fleet management using Cluster API",
+  "version": "0.1.0",
   "icon": "icon.png",
-  "publisher": "you",
+  "publisher": "jlaska",
   "license": "Apache-2.0",
   "engines": {
     "podman-desktop": ">=1.10.0"
