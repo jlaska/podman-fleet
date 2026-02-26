@@ -7,12 +7,14 @@ import type { ManagementClusterStatus, FleetMetrics, Cluster } from '/@shared/sr
 import ManagementClusterCard from '../components/ManagementClusterCard.svelte';
 import MetricsCards from '../components/MetricsCards.svelte';
 import ClusterList from '../components/ClusterList.svelte';
+import CreateClusterDialog from '../components/CreateClusterDialog.svelte';
 
 let managementStatus: ManagementClusterStatus | undefined = $state();
 let metrics: FleetMetrics | undefined = $state();
 let clusters: Cluster[] = $state([]);
 let loading = $state(true);
 let error = $state('');
+let showCreateDialog = $state(false);
 
 onMount(() => {
   loadData();
@@ -103,11 +105,27 @@ async function handleRefresh() {
         <MetricsCards {metrics} />
       {/if}
 
+      <!-- Actions bar -->
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-lg font-semibold">Clusters</h2>
+        <div class="flex gap-2">
+          <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faPlus}>Import Cluster</Button>
+          <Button on:click={() => showCreateDialog = true} icon={faServer}>Create Cluster</Button>
+        </div>
+      </div>
+
       <!-- Cluster list -->
       <ClusterList {clusters} onRefresh={loadData} />
     </div>
   {/if}
 </div>
+
+{#if showCreateDialog}
+  <CreateClusterDialog
+    onClose={() => showCreateDialog = false}
+    onSuccess={loadData}
+  />
+{/if}
 
 <style>
   :global(body) {

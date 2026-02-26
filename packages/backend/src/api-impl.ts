@@ -1,8 +1,9 @@
 import * as podmanDesktopApi from '@podman-desktop/api';
-import type { PodmanFleetApi } from '/@shared/src/PodmanFleetApi';
+import type { PodmanFleetApi, CreateClusterOptions } from '/@shared/src/PodmanFleetApi';
 import type { Cluster, FleetMetrics, ManagementClusterStatus } from '/@shared/src/types/cluster';
 import { ManagementCluster } from './capi/management-cluster';
 import { ClusterOperations } from './capi/cluster-operations';
+import { ClusterCreator } from './capi/cluster-creator';
 import { FleetStore } from './storage/fleet-store';
 
 /**
@@ -12,11 +13,13 @@ import { FleetStore } from './storage/fleet-store';
 export class podmanFleetApi implements PodmanFleetApi {
   private managementCluster: ManagementCluster;
   private clusterOps: ClusterOperations;
+  private clusterCreator: ClusterCreator;
   private fleetStore: FleetStore;
 
   constructor(private readonly extensionContext: podmanDesktopApi.ExtensionContext) {
     this.managementCluster = new ManagementCluster(extensionContext);
     this.clusterOps = new ClusterOperations();
+    this.clusterCreator = new ClusterCreator();
     this.fleetStore = new FleetStore(extensionContext);
   }
 
@@ -172,6 +175,26 @@ export class podmanFleetApi implements PodmanFleetApi {
     // For now, just re-fetch the cluster data
     // In the future, we could update health status by querying the cluster
     console.log('Refreshing cluster:', name);
+  }
+
+  /**
+   * Create a cluster
+   */
+  async createCluster(options: CreateClusterOptions): Promise<void> {
+    try {
+      // Check if management cluster is healthy
+      const status = await this.managementCluster.getStatus();
+      if (!status.exists || !status.healthy) {
+        throw new Error('Management cluster is not healthy. Please initialize it first.');
+      }
+
+      await this.clusterCreator.createLocalCluster(options);
+    } catch (error) {
+      console.error('Error creating cluster:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await podmanDesktopApi.window.showErrorMessage(`Failed to create cluster: ${errorMessage}`);
+      throw error;
+    }
   }
 
   /**
