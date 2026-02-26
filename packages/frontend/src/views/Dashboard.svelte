@@ -69,7 +69,7 @@ async function handleRefresh() {
       <div class="text-xl font-bold text-[var(--pd-content-header)]">OpenShift Management</div>
       <div class="text-sm text-[var(--pd-content-sub-header)]">Manage OpenShift & Kubernetes Clusters</div>
     </div>
-    <Button on:click={handleRefresh} icon={faRefresh}>Refresh</Button>
+    <Button on:click={handleRefresh} icon={faRefresh} type="link">Refresh</Button>
   </div>
 
   {#if loading}
@@ -109,7 +109,7 @@ async function handleRefresh() {
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-[var(--pd-content-header)]">Clusters</h2>
         <div class="flex gap-2">
-          <Button on:click={() => showCreateDialog = true} icon={faPlus}>Create Cluster</Button>
+          <Button on:click={() => showCreateDialog = true} icon={faPlus} type="secondary">Create Cluster</Button>
           <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faServer} type="secondary">Import Cluster</Button>
         </div>
       </div>
