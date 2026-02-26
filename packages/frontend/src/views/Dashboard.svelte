@@ -6,8 +6,10 @@ import { openShiftManagementClient } from '../api/client';
 import type { ManagementClusterStatus, ClusterMetrics, Cluster } from '/@shared/src/types/cluster';
 import ManagementClusterCard from '../components/ManagementClusterCard.svelte';
 import MetricsCards from '../components/MetricsCards.svelte';
+import DistributionCharts from '../components/DistributionCharts.svelte';
 import ClusterList from '../components/ClusterList.svelte';
 import CreateClusterDialog from '../components/CreateClusterDialog.svelte';
+import ImportClusterDialog from '../components/ImportClusterDialog.svelte';
 
 let managementStatus: ManagementClusterStatus | undefined = $state();
 let metrics: ClusterMetrics | undefined = $state();
@@ -15,6 +17,7 @@ let clusters: Cluster[] = $state([]);
 let loading = $state(true);
 let error = $state('');
 let showCreateDialog = $state(false);
+let showImportDialog = $state(false);
 
 onMount(() => {
   loadData();
@@ -105,12 +108,17 @@ async function handleRefresh() {
         <MetricsCards {metrics} />
       {/if}
 
+      <!-- Distribution Charts -->
+      {#if metrics}
+        <DistributionCharts {metrics} />
+      {/if}
+
       <!-- Actions bar -->
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-semibold text-[var(--pd-content-header)]">Clusters</h2>
         <div class="flex gap-2">
           <Button on:click={() => showCreateDialog = true} icon={faPlus} type="secondary">Create Cluster</Button>
-          <Button on:click={() => alert('Import cluster - Coming in Phase 3')} icon={faServer} type="secondary">Import Cluster</Button>
+          <Button on:click={() => showImportDialog = true} icon={faServer} type="secondary">Import Cluster</Button>
         </div>
       </div>
 
@@ -123,6 +131,13 @@ async function handleRefresh() {
 {#if showCreateDialog}
   <CreateClusterDialog
     onClose={() => showCreateDialog = false}
+    onSuccess={loadData}
+  />
+{/if}
+
+{#if showImportDialog}
+  <ImportClusterDialog
+    onClose={() => showImportDialog = false}
     onSuccess={loadData}
   />
 {/if}

@@ -29,5 +29,6 @@ export abstract class OpenShiftManagementApi {
   abstract deleteCluster(name: string): Promise<void>;
 
   // Import operations
-  abstract importCluster(kubeconfigPath: string): Promise<void>;
+  abstract importFromKubeconfig(kubeconfigPath: string): Promise<void>;
+  abstract importFromAPI(apiUrl: string, token: string, name?: string): Promise<void>;
 }

@@ -33,18 +33,3 @@ let { metrics }: Props = $props();
     <div class="text-3xl font-bold text-red-600">{metrics.failedClusters}</div>
   </div>
 </div>
-
-<!-- Provider Distribution -->
-<div class="mb-5 p-4 bg-[var(--pd-invert-content-card-bg)] rounded-lg border border-[var(--pd-content-card-border)]">
-  <h3 class="text-sm font-semibold mb-3 text-[var(--pd-content-header)]">Provider Distribution</h3>
-  <div class="flex gap-4">
-    {#each Object.entries(metrics.providerDistribution) as [provider, count]}
-      {#if count > 0}
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-1 bg-[var(--pd-button-primary-bg)] text-[var(--pd-button-primary-text)] rounded text-xs">{provider}</span>
-          <span class="text-lg font-semibold text-[var(--pd-content-header)]">{count}</span>
-        </div>
-      {/if}
-    {/each}
-  </div>
-</div>

@@ -5,6 +5,7 @@ import { ManagementCluster } from './capi/management-cluster';
 import { ClusterOperations } from './capi/cluster-operations';
 import { ClusterCreator } from './capi/cluster-creator';
 import { ClusterStore } from './storage/cluster-store';
+import { KubeconfigImport } from './import/kubeconfig-import';
 
 /**
  * OpenShiftManagementApi implementation
@@ -15,12 +16,14 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
   private clusterOps: ClusterOperations;
   private clusterCreator: ClusterCreator;
   private clusterStore: ClusterStore;
+  private kubeconfigImport: KubeconfigImport;
 
   constructor(private readonly extensionContext: podmanDesktopApi.ExtensionContext) {
     this.managementCluster = new ManagementCluster(extensionContext);
     this.clusterOps = new ClusterOperations();
     this.clusterCreator = new ClusterCreator();
     this.clusterStore = new ClusterStore(extensionContext);
+    this.kubeconfigImport = new KubeconfigImport();
   }
 
   /**
@@ -228,13 +231,47 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
   }
 
   /**
-   * Import a cluster via kubeconfig
+   * Import clusters from kubeconfig file
    */
-  async importCluster(kubeconfigPath: string): Promise<void> {
-    // For now, this is a placeholder
-    // In Phase 3, we'll implement full kubeconfig parsing
-    await podmanDesktopApi.window.showInformationMessage(
-      'Cluster import will be implemented in Phase 3',
-    );
+  async importFromKubeconfig(kubeconfigPath: string): Promise<void> {
+    try {
+      const clusters = await this.kubeconfigImport.importFromFile(kubeconfigPath);
+
+      if (clusters.length === 0) {
+        await podmanDesktopApi.window.showWarningMessage('No clusters found in kubeconfig file');
+        return;
+      }
+
+      // Store all imported clusters
+      for (const cluster of clusters) {
+        this.clusterStore.addImportedCluster(cluster);
+      }
+
+      await podmanDesktopApi.window.showInformationMessage(
+        `Successfully imported ${clusters.length} cluster${clusters.length > 1 ? 's' : ''}`,
+      );
+    } catch (error) {
+      console.error('Error importing from kubeconfig:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await podmanDesktopApi.window.showErrorMessage(`Failed to import kubeconfig: ${errorMessage}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Import cluster from API URL and token
+   */
+  async importFromAPI(apiUrl: string, token: string, name?: string): Promise<void> {
+    try {
+      const cluster = await this.kubeconfigImport.importFromAPI(apiUrl, token, name);
+      this.clusterStore.addImportedCluster(cluster);
+
+      await podmanDesktopApi.window.showInformationMessage(`Cluster "${cluster.name}" imported successfully`);
+    } catch (error) {
+      console.error('Error importing from API:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await podmanDesktopApi.window.showErrorMessage(`Failed to import cluster: ${errorMessage}`);
+      throw error;
+    }
   }
 }
