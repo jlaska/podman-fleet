@@ -266,8 +266,21 @@ export class ManagementCluster {
     env: Record<string, string> = {},
   ): Promise<string> {
     return new Promise((resolve, reject) => {
+      // Ensure PATH includes common locations for Homebrew and system binaries
+      const enhancedPath = [
+        '/opt/homebrew/bin',
+        '/usr/local/bin',
+        '/usr/bin',
+        '/bin',
+        process.env.PATH || '',
+      ].join(':');
+
       const proc = spawn(command, args, {
-        env: { ...process.env, ...env },
+        env: {
+          ...process.env,
+          PATH: enhancedPath,
+          ...env
+        },
       });
 
       let stdout = '';

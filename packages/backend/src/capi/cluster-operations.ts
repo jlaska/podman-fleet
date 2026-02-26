@@ -162,7 +162,21 @@ export class ClusterOperations {
    */
   private async execCommand(command: string, args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const proc = spawn(command, args);
+      // Ensure PATH includes common locations for Homebrew and system binaries
+      const enhancedPath = [
+        '/opt/homebrew/bin',
+        '/usr/local/bin',
+        '/usr/bin',
+        '/bin',
+        process.env.PATH || '',
+      ].join(':');
+
+      const proc = spawn(command, args, {
+        env: {
+          ...process.env,
+          PATH: enhancedPath,
+        },
+      });
 
       let stdout = '';
       let stderr = '';
