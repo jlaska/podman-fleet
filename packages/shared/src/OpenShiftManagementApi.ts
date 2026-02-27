@@ -31,4 +31,7 @@ export abstract class OpenShiftManagementApi {
   // Import operations
   abstract importFromKubeconfig(kubeconfigPath: string): Promise<void>;
   abstract importFromAPI(apiUrl: string, token: string, name?: string): Promise<void>;
+
+  // Context switching
+  abstract switchToClusterContext(clusterName: string): Promise<void>;
 }

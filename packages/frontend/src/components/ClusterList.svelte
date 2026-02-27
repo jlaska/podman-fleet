@@ -29,6 +29,14 @@ async function handleRefreshCluster(cluster: Cluster) {
   }
 }
 
+async function handleClusterClick(cluster: Cluster) {
+  try {
+    await openShiftManagementClient.switchToClusterContext(cluster.name);
+  } catch (err) {
+    console.error('Error switching to cluster context:', err);
+  }
+}
+
 function getStatusColor(status: string): string {
   switch (status) {
     case 'ready':
@@ -85,7 +93,15 @@ function getProviderColor(provider: string): string {
         <tbody>
           {#each clusters as cluster}
             <tr class="border-t border-[var(--pd-content-card-border)] hover:bg-[var(--pd-content-card-bg)]">
-              <td class="px-4 py-3 font-mono text-sm text-[var(--pd-content-text)]">{cluster.name}</td>
+              <td class="px-4 py-3">
+                <button
+                  class="font-mono text-sm text-[var(--pd-button-primary-bg)] hover:underline cursor-pointer"
+                  onclick={() => handleClusterClick(cluster)}
+                  title="Open in Kubernetes view">
+                  {cluster.name}
+                  <i class="fas fa-external-link-alt text-xs ml-1 opacity-50"></i>
+                </button>
+              </td>
               <td class="px-4 py-3">
                 <span class="px-2 py-1 {getProviderColor(cluster.provider)} rounded text-xs">
                   {cluster.provider}

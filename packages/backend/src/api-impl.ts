@@ -287,4 +287,42 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
       throw error;
     }
   }
+
+  /**
+   * Switch to a cluster's kubeconfig context and navigate to Kubernetes resources
+   */
+  async switchToClusterContext(clusterName: string): Promise<void> {
+    try {
+      console.log(`Switching to cluster context for: ${clusterName}`);
+      const cluster = await this.getCluster(clusterName);
+
+      if (!cluster) {
+        throw new Error(`Cluster "${clusterName}" not found`);
+      }
+
+      if (!cluster.kubeconfigContext) {
+        throw new Error(`Cluster "${clusterName}" has no kubeconfig context`);
+      }
+
+      console.log(`Switching to context: ${cluster.kubeconfigContext}`);
+
+      // Use Podman Desktop's kubecontext.switch command to update kubeconfig
+      // This properly triggers all internal events and refreshes
+      await podmanDesktopApi.commands.executeCommand('kubecontext.switch', cluster.kubeconfigContext);
+
+      console.log(`Successfully switched context to ${cluster.kubeconfigContext}`);
+
+      // Navigate to Kubernetes Dashboard using the kubernetes-navigation command
+      await podmanDesktopApi.commands.executeCommand('kubernetes-navigation', {
+        kind: 'dashboard',
+      });
+
+      console.log('Navigated to Kubernetes Dashboard');
+    } catch (error) {
+      console.error('Error switching cluster context:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await podmanDesktopApi.window.showErrorMessage(`Failed to switch context: ${errorMessage}`);
+      throw error;
+    }
+  }
 }
