@@ -1,5 +1,5 @@
 <script lang="ts">
-import { Table, TableColumn, TableRow, EmptyScreen } from '@podman-desktop/ui-svelte';
+import { EmptyScreen } from '@podman-desktop/ui-svelte';
 import { faServer, faTrash, faSync } from '@fortawesome/free-solid-svg-icons';
 import type { Cluster } from '/@shared/src/types/cluster';
 import { openShiftManagementClient } from '../api/client';
@@ -70,58 +70,60 @@ function getProviderColor(provider: string): string {
       icon={faServer}
     />
   {:else}
-    <Table>
-      <TableRow>
-        <TableColumn>Name</TableColumn>
-        <TableColumn>Provider</TableColumn>
-        <TableColumn>Status</TableColumn>
-        <TableColumn>Version</TableColumn>
-        <TableColumn>Type</TableColumn>
-        <TableColumn>Actions</TableColumn>
-      </TableRow>
-      {#each clusters as cluster}
-        <TableRow>
-          <TableColumn>
-            <span class="font-mono text-sm">{cluster.name}</span>
-          </TableColumn>
-          <TableColumn>
-            <span class="px-2 py-1 {getProviderColor(cluster.provider)} rounded text-xs">
-              {cluster.provider}
-            </span>
-          </TableColumn>
-          <TableColumn>
-            <span class="{getStatusColor(cluster.status)} capitalize text-sm">
-              {cluster.status}
-            </span>
-          </TableColumn>
-          <TableColumn>
-            <span class="text-sm">{cluster.version}</span>
-          </TableColumn>
-          <TableColumn>
-            {#if cluster.managed}
-              <span class="px-2 py-1 bg-green-600 text-white rounded text-xs">CAPI</span>
-            {:else}
-              <span class="px-2 py-1 bg-gray-600 text-white rounded text-xs">Imported</span>
-            {/if}
-          </TableColumn>
-          <TableColumn>
-            <div class="flex gap-2">
-              <button
-                class="text-[var(--pd-button-primary-bg)] hover:opacity-80"
-                onclick={() => handleRefreshCluster(cluster)}
-                title="Refresh">
-                <i class="fas fa-sync"></i>
-              </button>
-              <button
-                class="text-red-600 hover:opacity-80"
-                onclick={() => handleDelete(cluster)}
-                title="Delete">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </TableColumn>
-        </TableRow>
-      {/each}
-    </Table>
+    <div class="bg-[var(--pd-invert-content-card-bg)] rounded-lg border border-[var(--pd-content-card-border)] overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-[var(--pd-content-card-bg)] border-b border-[var(--pd-content-card-border)]">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--pd-content-header)]">Name</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--pd-content-header)]">Provider</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--pd-content-header)]">Status</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--pd-content-header)]">Version</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--pd-content-header)]">Type</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-[var(--pd-content-header)]">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {#each clusters as cluster}
+            <tr class="border-t border-[var(--pd-content-card-border)] hover:bg-[var(--pd-content-card-bg)]">
+              <td class="px-4 py-3 font-mono text-sm text-[var(--pd-content-text)]">{cluster.name}</td>
+              <td class="px-4 py-3">
+                <span class="px-2 py-1 {getProviderColor(cluster.provider)} rounded text-xs">
+                  {cluster.provider}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <span class="{getStatusColor(cluster.status)} capitalize text-sm">
+                  {cluster.status}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-sm text-[var(--pd-content-text)]">{cluster.version}</td>
+              <td class="px-4 py-3">
+                {#if cluster.managed}
+                  <span class="px-2 py-1 bg-green-600 text-white rounded text-xs">CAPI</span>
+                {:else}
+                  <span class="px-2 py-1 bg-gray-600 text-white rounded text-xs">Imported</span>
+                {/if}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-2">
+                  <button
+                    class="text-[var(--pd-button-primary-bg)] hover:opacity-80"
+                    onclick={() => handleRefreshCluster(cluster)}
+                    title="Refresh">
+                    <i class="fas fa-sync"></i>
+                  </button>
+                  <button
+                    class="text-red-600 hover:opacity-80"
+                    onclick={() => handleDelete(cluster)}
+                    title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
   {/if}
 </div>

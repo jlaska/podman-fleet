@@ -140,7 +140,11 @@ async function handleRefresh() {
       </div>
 
       <!-- Cluster list -->
-      <ClusterList {clusters} onRefresh={loadData} />
+      {#if clusters && Array.isArray(clusters)}
+        <ClusterList {clusters} onRefresh={loadData} />
+      {:else}
+        <div class="text-[var(--pd-content-sub-header)]">No clusters available</div>
+      {/if}
     </div>
   {/if}
 </div>
