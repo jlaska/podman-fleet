@@ -8,15 +8,19 @@ import { onMount } from 'svelte';
 import { getRouterState } from './api/client';
 import Dashboard from './views/Dashboard.svelte';
 
+console.log('[Frontend] App.svelte script executing');
+
 // Using our router instance, we can determine if the application has been mounted.
 router.mode.hash();
 let isMounted = false;
 
 onMount(() => {
+  console.log('[Frontend] App mounted, loading router state');
   // Load router state on application startup
   const state = getRouterState();
   router.goto(state.url);
   isMounted = true;
+  console.log('[Frontend] App fully mounted, router ready');
 });
 </script>
 

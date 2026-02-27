@@ -11,6 +11,8 @@ import ClusterList from '../components/ClusterList.svelte';
 import CreateClusterDialog from '../components/CreateClusterDialog.svelte';
 import ImportClusterDialog from '../components/ImportClusterDialog.svelte';
 
+console.log('[Frontend] Dashboard component script executing');
+
 let managementStatus: ManagementClusterStatus | undefined = $state();
 let metrics: ClusterMetrics | undefined = $state();
 let clusters: Cluster[] = $state([]);
@@ -19,7 +21,10 @@ let error = $state('');
 let showCreateDialog = $state(false);
 let showImportDialog = $state(false);
 
+console.log('[Frontend] Dashboard state initialized');
+
 onMount(() => {
+  console.log('[Frontend] Dashboard mounted, calling loadData');
   loadData();
 });
 
