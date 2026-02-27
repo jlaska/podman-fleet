@@ -25,16 +25,16 @@ function getProviderColor(provider: string): string {
 }
 
 const providerEntries = $derived(
-  Object.entries(metrics.providerDistribution).filter(([_, count]) => count > 0)
+  metrics?.providerDistribution ? Object.entries(metrics.providerDistribution).filter(([_, count]) => count > 0) : []
 );
 
 const versionEntries = $derived(
-  Object.entries(metrics.versionDistribution)
+  metrics?.versionDistribution ? Object.entries(metrics.versionDistribution)
     .filter(([_, count]) => count > 0)
-    .sort((a, b) => b[1] - a[1]) // Sort by count descending
+    .sort((a, b) => b[1] - a[1]) : [] // Sort by count descending
 );
 
-const totalClusters = $derived(metrics.totalClusters || 1); // Avoid division by zero
+const totalClusters = $derived(metrics?.totalClusters || 1); // Avoid division by zero
 </script>
 
 <div class="grid grid-cols-2 gap-4 mb-5">

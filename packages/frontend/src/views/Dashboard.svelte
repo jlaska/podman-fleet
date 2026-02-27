@@ -121,12 +121,12 @@ async function handleRefresh() {
       {/if}
 
       <!-- Cluster metrics -->
-      {#if metrics}
+      {#if metrics && metrics.totalClusters !== undefined}
         <MetricsCards {metrics} />
       {/if}
 
       <!-- Distribution Charts -->
-      {#if metrics}
+      {#if metrics && metrics.totalClusters !== undefined && clusters.length > 0}
         <DistributionCharts {metrics} />
       {/if}
 
