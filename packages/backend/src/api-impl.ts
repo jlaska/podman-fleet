@@ -30,7 +30,10 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
    * Get management cluster status
    */
   async getManagementClusterStatus(): Promise<ManagementClusterStatus> {
-    return this.managementCluster.getStatus();
+    console.log('Getting management cluster status...');
+    const status = await this.managementCluster.getStatus();
+    console.log('Management cluster status:', status);
+    return status;
   }
 
   /**
@@ -89,20 +92,25 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
    * List all clusters (CAPI-managed + imported)
    */
   async listClusters(): Promise<Cluster[]> {
+    console.log('Listing all clusters...');
     const clusters: Cluster[] = [];
 
     // Get CAPI-managed clusters
     try {
       const capiClusters = await this.clusterOps.listCAPIClusters();
+      console.log('CAPI clusters:', capiClusters.length);
       clusters.push(...capiClusters);
     } catch (error) {
       console.error('Error listing CAPI clusters:', error);
     }
 
     // Get imported clusters
+    console.log('Getting imported clusters from store...');
     const importedClusters = this.clusterStore.getImportedClusters();
+    console.log('Imported clusters:', importedClusters.length);
     clusters.push(...importedClusters);
 
+    console.log('Total clusters to return:', clusters.length);
     return clusters;
   }
 
@@ -110,6 +118,7 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
    * Get cluster metrics
    */
   async getClusterMetrics(): Promise<ClusterMetrics> {
+    console.log('Getting cluster metrics...');
     const clusters = await this.listClusters();
 
     const metrics: ClusterMetrics = {
@@ -149,6 +158,7 @@ export class openShiftManagementApi implements OpenShiftManagementApi {
       metrics.versionDistribution[version] = (metrics.versionDistribution[version] || 0) + 1;
     }
 
+    console.log('Cluster metrics calculated:', metrics);
     return metrics;
   }
 
