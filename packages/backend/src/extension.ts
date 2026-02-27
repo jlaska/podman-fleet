@@ -20,8 +20,11 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   // Create webview panel for the management dashboard
   managementPanel = extensionApi.window.createWebviewPanel('openshiftManagement', 'OpenShift Management', {
     localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
+    enableScripts: true,
   });
   extensionContext.subscriptions.push(managementPanel);
+
+  console.log('Webview panel created with scripts enabled');
 
   // Set up the webview HTML
   await setupWebview(extensionContext, managementPanel);
@@ -92,6 +95,7 @@ async function setupWebview(
   }
 
   panel.webview.html = indexHtml;
+  console.log('Webview HTML set, length:', indexHtml.length);
 }
 
 /**
