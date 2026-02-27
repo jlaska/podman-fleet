@@ -28,36 +28,31 @@ async function loadData() {
   error = '';
 
   try {
-    console.log('Loading dashboard data...');
+    console.log('[Frontend] Starting to load dashboard data...');
 
-    // Load with timeout to prevent hanging
-    const loadPromise = Promise.all([
-      openShiftManagementClient.getManagementClusterStatus(),
-      openShiftManagementClient.getClusterMetrics(),
-      openShiftManagementClient.listClusters(),
-    ]);
+    // Load each separately to see which one hangs
+    console.log('[Frontend] Calling getManagementClusterStatus...');
+    const statusResult = await openShiftManagementClient.getManagementClusterStatus();
+    console.log('[Frontend] Got status:', statusResult);
 
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Loading timed out after 30 seconds')), 30000)
-    );
+    console.log('[Frontend] Calling getClusterMetrics...');
+    const metricsResult = await openShiftManagementClient.getClusterMetrics();
+    console.log('[Frontend] Got metrics:', metricsResult);
 
-    const [statusResult, metricsResult, clustersResult] = await Promise.race([
-      loadPromise,
-      timeoutPromise,
-    ]) as [any, any, any];
+    console.log('[Frontend] Calling listClusters...');
+    const clustersResult = await openShiftManagementClient.listClusters();
+    console.log('[Frontend] Got clusters:', clustersResult?.length);
 
     managementStatus = statusResult;
     metrics = metricsResult;
     clusters = clustersResult;
 
-    console.log('Dashboard data loaded:', {
-      management: managementStatus?.exists,
-      totalClusters: metrics?.totalClusters,
-    });
+    console.log('[Frontend] Dashboard data loaded successfully');
   } catch (err) {
     error = err instanceof Error ? err.message : 'Failed to load cluster data';
-    console.error('Error loading cluster data:', err);
+    console.error('[Frontend] Error loading cluster data:', err);
   } finally {
+    console.log('[Frontend] Setting loading = false');
     loading = false;
   }
 }
